@@ -53,6 +53,11 @@ npx cap open ios
 Run on a **physical device** — the iOS Simulator has no `AVCaptureDevice`, so the scanner
 cannot start there. Tap **Start scan**, then point it at any QR code.
 
+Starts on the **front** camera, which is where the issue was originally seen (`lensFacing`
+defaults to `LensFacing.Back`, so it has to be set explicitly). **Flip camera** switches
+lenses — worth trying both, since the front preview is horizontally mirrored and the back
+one is not.
+
 - **Solid green square** — the `detectionArea` sent to `startScan`.
 - **Dashed red square** — where the decode window actually lands when mirrored.
 

@@ -1,6 +1,7 @@
 import {
   BarcodeFormat,
   BarcodeScanner,
+  LensFacing,
   PreviewPlacement,
 } from '@capawesome-team/capacitor-barcode-scanner';
 
@@ -10,6 +11,10 @@ const frameEl = document.getElementById('frame');
 let listener = null;
 let scanning = false;
 let hits = 0;
+
+// Defaults to the front camera: that is where the issue was originally observed, and the
+// front preview is horizontally mirrored, which the back camera's is not.
+let lens = LensFacing.Front;
 
 const log = (text) => {
   out.textContent = text;
@@ -32,7 +37,8 @@ function report(extra = '') {
   const { preview, detectionArea } = measure();
   const mirroredY = preview.height - detectionArea.y - detectionArea.height;
   log(
-    `preview   ${preview.width}x${preview.height}\n` +
+    `camera    ${lens}${scanning ? '' : ' (stopped)'}\n` +
+      `preview   ${preview.width}x${preview.height}\n` +
       `sent      x=${detectionArea.x} y=${detectionArea.y} w=${detectionArea.width} h=${detectionArea.height}\n` +
       `mirrored  y would become ${mirroredY} (off by ${Math.abs(detectionArea.y - mirroredY)}px)\n` +
       `hits      ${hits}${extra ? `\n${extra}` : ''}`,
@@ -60,6 +66,7 @@ async function start() {
     placement: PreviewPlacement.Behind,
     frame: preview,
     detectionArea,
+    lensFacing: lens,
   });
 
   scanning = true;
@@ -75,8 +82,21 @@ async function stop() {
   log('stopped');
 }
 
+// `detectionArea` and `lensFacing` can only be set by `startScan`, so flipping means
+// tearing the session down and bringing it back up on the other lens.
+async function flip() {
+  lens = lens === LensFacing.Front ? LensFacing.Back : LensFacing.Front;
+  if (scanning) {
+    await stop();
+    await start();
+  } else {
+    report();
+  }
+}
+
 document.getElementById('start').addEventListener('click', () => void start());
 document.getElementById('stop').addEventListener('click', () => void stop());
+document.getElementById('flip').addEventListener('click', () => void flip());
 
 // Rotating changes the layout, and detectionArea can only be set by startScan, so the
 // session has to be restarted on the settled layout.
