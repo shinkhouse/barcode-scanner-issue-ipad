@@ -37,9 +37,20 @@ Because the decode window is a **hardware** filter, rejected codes never reach
 `metadataOutput(_:didOutput:from:)`, so the plugin's own — and correct —
 `containsCornerPoints` check in `handleEmbeddedDetectedBarcodes` never gets to run.
 
-> A detection square centred on **both** axes hides this completely: mirroring maps it onto
-> itself. The square in this repro is deliberately placed low (centre at 70% of height) so
-> the reflection is obvious.
+The size of the dead band is **twice the square's offset from the preview centre**, because
+the window is reflected rather than translated. In the affected app the square is centred
+horizontally (`dx = 0` in every orientation) and sits 33px low — it is centred in the space
+below a header bar — which yields the 67px dead band above:
+
+| orientation | preview | square centre | preview centre | offset | dead band |
+| --- | --- | --- | --- | --- | --- |
+| landscape | 1108 × 759 | (554, 413) | (554, 380) | +33.5 | 67px |
+| landscape | 1108 × 737 | (554, 397) | (554, 368) | +28.5 | 57px |
+| portrait | 820 × 1180 | (410, 623) | (410, 590) | +33.0 | 66px |
+
+> A square centred on **both** axes hides the defect completely — mirroring maps it onto
+> itself. This repro defaults to the real app's geometry (centred below the header), which
+> looks centred but still reproduces. **Centre / low** exaggerates it for a clearer demo.
 
 ## Running it
 

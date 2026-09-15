@@ -17,12 +17,16 @@ let hits = 0;
 // front preview is horizontally mirrored, which the back camera's is not.
 let lens = LensFacing.Front;
 
-// Where the detection square sits, as a fraction of viewport height.
+// How the detection square is positioned.
 //
-// 0.7 (low) is the interesting case. The defect reflects the decode window about the
-// preview's centre, so a square at 0.5 maps onto itself and the bug becomes invisible —
-// "centred" is a repro that passes on a broken plugin. Toggle it to see exactly that.
-let frameTop = 0.7;
+// 'app' mirrors the real app: centred horizontally, and centred in the space *below* the
+// header bar. That reads as centred on screen but sits half a header-height low, and the
+// defect reflects the window about the preview centre, so the dead band is twice that
+// offset — a 33px offset became a 67px dead band on the affected device.
+//
+// 'low' just exaggerates the same effect for a more obvious demo. A square centred on
+// both axes maps onto itself and hides the bug entirely.
+let framePos = 'app';
 
 // Whether to send `detectionArea` at all. With it off the whole preview decodes, which
 // separates "this camera cannot decode" from "the decode window is in the wrong place".
@@ -33,9 +37,14 @@ const log = (text) => {
 };
 
 function layout() {
-  frameEl.style.top = `${frameTop * 100}%`;
+  const h = window.innerHeight;
+  const headerH = document.getElementById('ui').getBoundingClientRect().height;
+  // 'app': centred in the space below the header — visually centred, half a header low.
+  const centreY = framePos === 'app' ? headerH / 2 + h / 2 : 0.7 * h;
+
+  frameEl.style.top = `${centreY}px`;
   // Where the window actually lands if it is mirrored about the preview centre.
-  mirrorEl.style.top = `${(1 - frameTop) * 100}%`;
+  mirrorEl.style.top = `${h - centreY}px`;
   mirrorEl.style.display = useArea ? '' : 'none';
   frameEl.style.borderStyle = useArea ? 'solid' : 'dotted';
 }
@@ -58,7 +67,7 @@ function report(extra = '') {
   const mirroredY = preview.height - detectionArea.y - detectionArea.height;
   log(
     `camera    ${lens}${scanning ? '' : ' (stopped)'}\n` +
-      `area      ${useArea ? `on, top ${Math.round(frameTop * 100)}%` : 'OFF (whole preview decodes)'}\n` +
+      `area      ${useArea ? `on (${framePos})` : 'OFF (whole preview decodes)'}\n` +
       `preview   ${preview.width}x${preview.height}\n` +
       `sent      x=${detectionArea.x} y=${detectionArea.y} w=${detectionArea.width} h=${detectionArea.height}\n` +
       `mirrored  y would become ${mirroredY} (off by ${Math.abs(detectionArea.y - mirroredY)}px)\n` +
@@ -123,7 +132,7 @@ document.getElementById('flip').addEventListener('click', () => {
 });
 
 document.getElementById('move').addEventListener('click', () => {
-  frameTop = frameTop === 0.5 ? 0.7 : 0.5;
+  framePos = framePos === 'app' ? 'low' : 'app';
   void restart();
 });
 
