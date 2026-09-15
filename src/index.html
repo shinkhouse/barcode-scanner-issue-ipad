@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Detection Area Repro</title>
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: transparent;
+        font-family: -apple-system, system-ui, sans-serif;
+        -webkit-user-select: none;
+      }
+
+      /* The detection square. Horizontally centred but deliberately LOW: the bug
+         point-mirrors the decode window about the preview centre, so a square that is
+         centred on both axes would hide the defect entirely. */
+      #frame {
+        position: fixed;
+        left: 50%;
+        top: 70%;
+        width: 45vmin;
+        height: 45vmin;
+        transform: translate(-50%, -50%);
+        border: 3px solid #00e000;
+        box-sizing: border-box;
+        pointer-events: none;
+      }
+
+      /* Where the decode window is actually enforced when the bug is present: the
+         square reflected about the preview's vertical centre (top: 70% -> 30%). */
+      #mirror {
+        position: fixed;
+        left: 50%;
+        top: 30%;
+        width: 45vmin;
+        height: 45vmin;
+        transform: translate(-50%, -50%);
+        border: 3px dashed #ff3b30;
+        box-sizing: border-box;
+        pointer-events: none;
+      }
+
+      #ui {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        padding: calc(env(safe-area-inset-top) + 8px) 12px 8px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      button {
+        font-size: 15px;
+        padding: 6px 14px;
+        margin-right: 8px;
+      }
+
+      #out {
+        margin-top: 6px;
+        white-space: pre-wrap;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11px;
+      }
+
+      .key {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        vertical-align: -1px;
+        margin-right: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui">
+      <button id="start">Start scan</button>
+      <button id="stop">Stop</button>
+      <div style="margin-top: 6px">
+        <span class="key" style="background: #00e000"></span>solid green = detectionArea we sent &nbsp;
+        <span class="key" style="background: #ff3b30"></span>dashed red = where it is actually enforced (if mirrored)
+      </div>
+      <div id="out">idle</div>
+    </div>
+
+    <div id="frame"></div>
+    <div id="mirror"></div>
+
+    <script type="module" src="js/repro.js"></script>
+  </body>
+</html>

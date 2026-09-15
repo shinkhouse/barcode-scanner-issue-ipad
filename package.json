@@ -1,0 +1,20 @@
+{
+  "name": "barcode-detection-area-repro",
+  "version": "1.0.0",
+  "description": "Repro: detectionArea is enforced point-mirrored in landscape (iOS)",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
+    "@capawesome-team/capacitor-barcode-scanner": "0.1.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2",
+    "vite": "^5.4.0"
+  },
+  "license": "ISC"
+}
